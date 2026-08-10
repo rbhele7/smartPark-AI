@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartPark AI - Real-time Intelligent Parking Dashboard</title>
+  <!-- Google Fonts & Lucide Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --bg-card: rgba(18, 24, 38, 0.7);
+      --bg-card-hover: rgba(28, 37, 56, 0.8);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(99, 102, 241, 0.3);
+      --primary: #6366f1;
+      --primary-glow: rgba(99, 102, 241, 0.4);
+      --accent: #06b6d4;
+      --vacant: #22c55e;
+      --vacant-glow: rgba(34, 197, 94, 0.3);
+      --occupied: #ef4444;
+      --occupied-glow: rgba(239, 68, 68, 0.3);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --font-heading: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.12) 0px, transparent 50%);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Layout */
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 2rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px var(--primary-glow);
+    }
+
+    .brand h1 {
+      font-family: var(--font-heading);
+      font-size: 1.75rem;
+      font-weight: 700;
+      background: linear-gradient(to right, #fff, #a5b4fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      border-radius: 20px;
+      color: var(--vacant);
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+
+    .status-pulse {
+      width: 8px;
+      height: 8px;
+      background-color: var(--vacant);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--vacant);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+      70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+
+    /* Grid layout */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card:hover {
+      border-color: var(--border-accent);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    .card-title {
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+    }
+
+    .card-title i {
+      color: var(--primary);
+    }
+
+    /* Tab Navigation */
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1.5rem;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 16px;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+
+    /* Upload Area */
+    .dropzone {
+      border: 2px dashed var(--border-accent);
+      border-radius: 12px;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      background: rgba(99, 102, 241, 0.02);
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .dropzone:hover, .dropzone.dragover {
+      background: rgba(99, 102, 241, 0.08);
+      border-color: var(--primary);
+    }
+
+    .dropzone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .upload-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 12px;
+      background: rgba(99, 102, 241, 0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, var(--primary), #4f46e5);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 15px var(--primary-glow);
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px var(--primary-glow);
+    }
+
+    /* Results section */
+    .result-box {
+      margin-top: 1.5rem;
+      padding: 1.25rem;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      display: none;
+    }
+
+    .result-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .result-badge.vacant {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--vacant);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .result-badge.occupied {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--occupied);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .preview-img {
+      max-width: 100%;
+      border-radius: 10px;
+      margin-top: 1rem;
+      border: 1px solid var(--border-color);
+    }
+
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px dashed var(--border-color);
+      font-size: 0.9rem;
+    }
+
+    .metric-row:last-child {
+      border-bottom: none;
+    }
+
+    .metric-val {
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .latency-tag {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--accent);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+
+    /* Batch Grid */
+    .batch-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      margin-top: 1rem;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .batch-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+    }
+
+    .batch-item img {
+      width: 100%;
+      height: 90px;
+      object-fit: cover;
+      border-radius: 6px;
+      margin-bottom: 6px;
+    }
+
+    .batch-item .tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .batch-item .tag.vacant { background: rgba(34, 197, 94, 0.2); color: var(--vacant); }
+    .batch-item .tag.occupied { background: rgba(239, 68, 68, 0.2); color: var(--occupied); }
+
+    /* Spinner */
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(255,255,255,0.2);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo-icon">
+          <i data-lucide="square-parking" style="color: white; width: 26px; height: 26px;"></i>
+        </div>
+        <div>
+          <h1>SmartPark AI</h1>
+          <p style="color: var(--text-muted); font-size: 0.875rem;">FastAPI Powered Real-Time Occupancy Detection</p>
+        </div>
+      </div>
+      <div class="status-badge" id="api-status">
+        <span class="status-pulse"></span>
+        <span id="status-text">Backend Active (Model Loaded)</span>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('single')">
+        <i data-lucide="image" style="width: 18px;"></i> Single Spot Predictor
+      </button>
+      <button class="tab-btn" onclick="switchTab('batch')">
+        <i data-lucide="images" style="width: 18px;"></i> Batch Spot Analyzer
+      </button>
+      <button class="tab-btn" onclick="switchTab('lot')">
+        <i data-lucide="layout-grid" style="width: 18px;"></i> Full Parking Lot ROI
+      </button>
+      <button class="tab-btn" onclick="switchTab('metrics')">
+        <i data-lucide="activity" style="width: 18px;"></i> System Telemetry
+      </button>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="dashboard-grid">
+
+      <!-- Left Column: Interactive Inputs -->
+      <div style="grid-column: span 7;">
+        
+        <!-- Tab 1: Single Spot -->
+        <div id="tab-single" class="card">
+          <h2 class="card-title"><i data-lucide="upload-cloud"></i> Test Single Parking Spot</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">
+            Upload an image of a single parking spot to evaluate whether it is occupied or vacant in sub-15ms inference time.
+          </p>
+
+          <div class="dropzone" id="dropzone-single">
+            <div class="upload-icon">
+              <i data-lucide="file-up" style="width: 24px; height: 24px;"></i>
+            </div>
+            <p style="font-weight: 600;">Drag & drop image here or click to browse</p>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 4px;">Supports JPG, PNG, WEBP</p>
+            <input type="file" id="file-single" accept="image/*" onchange="handleSingleSelect(this.files[0])">
+          </div>
+
+          <button class="btn" id="btn-predict-single" onclick="runSinglePredict()">
+            <i data-lucide="zap" style="width: 18px;"></i> Predict Spot Occupancy
+          </button>
+        </div>
+
+        <!-- Tab 2: Batch Spot -->
+        <div id="tab-batch" class="card" style="display: none;">
+          <h2 class="card-title"><i data-lucide="layers"></i> Batch Spot Inference</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">
+            Upload multiple parking spot cropped images for vectorized batch processing.
+          </p>
+
+          <div class="dropzone" id="dropzone-batch">
+            <div class="upload-icon">
+              <i data-lucide="files" style="width: 24px; height: 24px;"></i>
+            </div>
+            <p style="font-weight: 600;">Select multiple images for batch analysis</p>
+            <input type="file" id="file-batch" accept="image/*" multiple onchange="handleBatchSelect(this.files)">
+          </div>
+
+          <button class="btn" id="btn-predict-batch" onclick="runBatchPredict()">
+            <i data-lucide="cpu" style="width: 18px;"></i> Analyze Batch Images
+          </button>
+        </div>
+
+        <!-- Tab 3: Full Parking Lot -->
+        <div id="tab-lot" class="card" style="display: none;">
+          <h2 class="card-title"><i data-lucide="map-pin"></i> Full Parking Lot Map Analyzer</h2>
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">
+            Upload a camera overview of a parking lot. The backend automatically extracts spot ROIs, predicts status, and returns a color-coded annotated visual map.
+          </p>
+
+          <div class="dropzone" id="dropzone-lot">
+            <div class="upload-icon">
+              <i data-lucide="camera" style="width: 24px; height: 24px;"></i>
+            </div>
+            <p style="font-weight: 600;">Upload Parking Lot Overview Image</p>
+            <input type="file" id="file-lot" accept="image/*" onchange="handleLotSelect(this.files[0])">
+          </div>
+
+          <button class="btn" id="btn-predict-lot" onclick="runLotPredict()">
+            <i data-lucide="sparkles" style="width: 18px;"></i> Generate Occupancy Map
+          </button>
+        </div>
+
+        <!-- Tab 4: Metrics -->
+        <div id="tab-metrics" class="card" style="display: none;">
+          <h2 class="card-title"><i data-lucide="gauge"></i> Real-time Backend Telemetry</h2>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+            <div style="background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 12px; text-align: center;">
+              <p style="color: var(--text-muted); font-size: 0.85rem;">Average Latency</p>
+              <h3 id="stat-latency" style="font-size: 2rem; font-family: var(--font-heading); color: var(--accent);">-- ms</h3>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 12px; text-align: center;">
+              <p style="color: var(--text-muted); font-size: 0.85rem;">Total Inferences</p>
+              <h3 id="stat-count" style="font-size: 2rem; font-family: var(--font-heading); color: var(--primary);">--</h3>
+            </div>
+          </div>
+          <button class="btn" style="margin-top: 1.5rem;" onclick="loadTelemetry()">
+            <i data-lucide="refresh-cw" style="width: 18px;"></i> Refresh Metrics
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Results Panel -->
+      <div style="grid-column: span 5;">
+        <div class="card" style="min-height: 480px;">
+          <h2 class="card-title"><i data-lucide="pie-chart"></i> Live Output & Analytics</h2>
+
+          <div id="placeholder-output" style="text-align: center; padding: 4rem 1rem; color: var(--text-muted);">
+            <i data-lucide="scan-line" style="width: 48px; height: 48px; opacity: 0.3; margin-bottom: 12px;"></i>
+            <p>Upload an image and trigger prediction to see real-time output & latency measurements.</p>
+          </div>
+
+          <!-- Output Display Container -->
+          <div id="output-container" class="result-box">
+            <div id="result-status-bar" style="margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+              <div id="badge-prediction" class="result-badge vacant">VACANT</div>
+              <span id="tag-latency" class="latency-tag">12.4 ms</span>
+            </div>
+
+            <div class="metric-row">
+              <span>Class Name</span>
+              <span class="metric-val" id="val-class">Vacant</span>
+            </div>
+            <div class="metric-row">
+              <span>Model Confidence</span>
+              <span class="metric-val" id="val-confidence">98.5%</span>
+            </div>
+            <div class="metric-row">
+              <span>Server Response Time</span>
+              <span class="metric-val" id="val-latency">14 ms</span>
+            </div>
+
+            <div id="batch-preview-container" style="display: none; margin-top: 1rem;">
+              <h4 style="font-size: 0.9rem; margin-bottom: 8px;">Batch Items (<span id="batch-count">0</span>)</h4>
+              <div class="batch-grid" id="batch-items-grid"></div>
+            </div>
+
+            <div id="img-preview-container" style="text-align: center;">
+              <img id="img-result" class="preview-img" src="" alt="Result Preview">
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    let singleFile = null;
+    let batchFiles = [];
+    let lotFile = null;
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+
+      document.getElementById('tab-single').style.display = 'none';
+      document.getElementById('tab-batch').style.display = 'none';
+      document.getElementById('tab-lot').style.display = 'none';
+      document.getElementById('tab-metrics').style.display = 'none';
+
+      document.getElementById(`tab-${tab}`).style.display = 'block';
+
+      if (tab === 'metrics') {
+        loadTelemetry();
+      }
+    }
+
+    function handleSingleSelect(file) {
+      if (!file) return;
+      singleFile = file;
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('placeholder-output').style.display = 'none';
+        document.getElementById('output-container').style.display = 'block';
+        document.getElementById('img-result').src = e.target.result;
+        document.getElementById('batch-preview-container').style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleBatchSelect(files) {
+      if (!files.length) return;
+      batchFiles = Array.from(files);
+      alert(`${batchFiles.length} images selected for batch analysis.`);
+    }
+
+    function handleLotSelect(file) {
+      if (!file) return;
+      lotFile = file;
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('placeholder-output').style.display = 'none';
+        document.getElementById('output-container').style.display = 'block';
+        document.getElementById('img-result').src = e.target.result;
+        document.getElementById('batch-preview-container').style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function runSinglePredict() {
+      if (!singleFile) {
+        alert("Please select an image file first.");
+        return;
+      }
+
+      const btn = document.getElementById('btn-predict-single');
+      btn.innerHTML = '<span class="spinner"></span> Processing...';
+      btn.disabled = true;
+
+      const formData = new FormData();
+      formData.append('file', singleFile);
+
+      try {
+        const res = await fetch('/api/v1/predict', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        
+        btn.innerHTML = '<i data-lucide="zap" style="width: 18px;"></i> Predict Spot Occupancy';
+        btn.disabled = false;
+        lucide.createIcons();
+
+        if (res.ok && data.status === 'success') {
+          const pred = data.prediction;
+          const isVacant = pred.class_name.toLowerCase() === 'vacant';
+
+          document.getElementById('placeholder-output').style.display = 'none';
+          document.getElementById('output-container').style.display = 'block';
+
+          const badge = document.getElementById('badge-prediction');
+          badge.textContent = pred.class_name.toUpperCase();
+          badge.className = `result-badge ${isVacant ? 'vacant' : 'occupied'}`;
+
+          document.getElementById('tag-latency').textContent = `${data.inference_time_ms} ms`;
+          document.getElementById('val-class').textContent = pred.class_name;
+          document.getElementById('val-confidence').textContent = `${(pred.confidence * 100).toFixed(1)}%`;
+          document.getElementById('val-latency').textContent = `${data.inference_time_ms} ms`;
+        } else {
+          alert(`Prediction Error: ${data.detail || 'Failed'}`);
+        }
+      } catch (err) {
+        btn.innerHTML = '<i data-lucide="zap" style="width: 18px;"></i> Predict Spot Occupancy';
+        btn.disabled = false;
+        lucide.createIcons();
+        alert(`API Error: ${err.message}`);
+      }
+    }
+
+    async function runBatchPredict() {
+      if (!batchFiles.length) {
+        alert("Please select batch images first.");
+        return;
+      }
+
+      const btn = document.getElementById('btn-predict-batch');
+      btn.innerHTML = '<span class="spinner"></span> Batch Processing...';
+      btn.disabled = true;
+
+      const formData = new FormData();
+      batchFiles.forEach(f => formData.append('files', f));
+
+      try {
+        const res = await fetch('/api/v1/predict/batch', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+
+        btn.innerHTML = '<i data-lucide="cpu" style="width: 18px;"></i> Analyze Batch Images';
+        btn.disabled = false;
+        lucide.createIcons();
+
+        if (res.ok && data.status === 'success') {
+          document.getElementById('placeholder-output').style.display = 'none';
+          document.getElementById('output-container').style.display = 'block';
+          document.getElementById('badge-prediction').textContent = `BATCH (${data.total_images})`;
+          document.getElementById('badge-prediction').className = 'result-badge vacant';
+          document.getElementById('tag-latency').textContent = `${data.inference_time_ms} ms`;
+
+          document.getElementById('val-class').textContent = `${data.total_images} spot images`;
+          document.getElementById('val-confidence').textContent = "Multi-item Batch";
+          document.getElementById('val-latency').textContent = `${data.inference_time_ms} ms`;
+
+          const grid = document.getElementById('batch-items-grid');
+          grid.innerHTML = '';
+          data.predictions.forEach((item, idx) => {
+            const isVac = item.class_name === 'vacant';
+            const div = document.createElement('div');
+            div.className = 'batch-item';
+            div.innerHTML = `
+              <p style="font-size: 0.75rem; color: #aaa;">${item.filename || 'Spot ' + (idx+1)}</p>
+              <span class="tag ${isVac ? 'vacant' : 'occupied'}">${item.class_name.toUpperCase()} (${(item.confidence*100).toFixed(0)}%)</span>
+            `;
+            grid.appendChild(div);
+          });
+          document.getElementById('batch-count').textContent = data.total_images;
+          document.getElementById('batch-preview-container').style.display = 'block';
+          document.getElementById('img-result').style.display = 'none';
+        }
+      } catch (err) {
+        btn.innerHTML = '<i data-lucide="cpu" style="width: 18px;"></i> Analyze Batch Images';
+        btn.disabled = false;
+        lucide.createIcons();
+        alert(`API Error: ${err.message}`);
+      }
+    }
+
+    async function runLotPredict() {
+      if (!lotFile) {
+        alert("Please select a parking lot image first.");
+        return;
+      }
+
+      const btn = document.getElementById('btn-predict-lot');
+      btn.innerHTML = '<span class="spinner"></span> Analyzing Lot ROIs...';
+      btn.disabled = true;
+
+      const formData = new FormData();
+      formData.append('file', lotFile);
+
+      try {
+        const res = await fetch('/api/v1/predict/parking-lot', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+
+        btn.innerHTML = '<i data-lucide="sparkles" style="width: 18px;"></i> Generate Occupancy Map';
+        btn.disabled = false;
+        lucide.createIcons();
+
+        if (res.ok && data.status === 'success') {
+          document.getElementById('placeholder-output').style.display = 'none';
+          document.getElementById('output-container').style.display = 'block';
+          document.getElementById('badge-prediction').textContent = `${data.occupancy_rate}% OCCUPIED`;
+          document.getElementById('badge-prediction').className = 'result-badge occupied';
+          document.getElementById('tag-latency').textContent = `${data.inference_time_ms} ms`;
+
+          document.getElementById('val-class').textContent = `Vacant: ${data.vacant_count} | Occupied: ${data.occupied_count}`;
+          document.getElementById('val-confidence').textContent = `${data.total_spots} Spots Total`;
+          document.getElementById('val-latency').textContent = `${data.inference_time_ms} ms`;
+
+          document.getElementById('batch-preview-container').style.display = 'none';
+          const imgResult = document.getElementById('img-result');
+          imgResult.style.display = 'inline-block';
+          imgResult.src = `data:image/jpeg;base64,${data.annotated_image_base64}`;
+        }
+      } catch (err) {
+        btn.innerHTML = '<i data-lucide="sparkles" style="width: 18px;"></i> Generate Occupancy Map';
+        btn.disabled = false;
+        lucide.createIcons();
+        alert(`API Error: ${err.message}`);
+      }
+    }
+
+    async function loadTelemetry() {
+      try {
+        const res = await fetch('/api/v1/analytics');
+        const data = await res.json();
+        if (res.ok) {
+          document.getElementById('stat-latency').textContent = `${data.avg_inference_time_ms} ms`;
+          document.getElementById('stat-count').textContent = data.total_requests;
+        }
+      } catch (e) {
+        console.error("Failed loading telemetry:", e);
+      }
+    }
+  </script>
+</body>
+</html>
