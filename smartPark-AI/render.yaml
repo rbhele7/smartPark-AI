@@ -32,13 +32,13 @@ services:
         fromService:
           type: web
           name: smartpark-api
-          property: url
+          envVarKey: RENDER_EXTERNAL_URL
+
+      - key: PYTHON_VERSION
+        value: 3.12.13
 
       - key: KERAS_HOME
         value: /tmp/.keras
 
       - key: MPLCONFIGDIR
         value: /tmp/.matplotlib
-
-      - key: PYTHON_VERSION
-        value: 3.12.13
