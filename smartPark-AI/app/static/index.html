@@ -559,7 +559,7 @@
       if (host === 'localhost' || host === '127.0.0.1') {
         return '';
       }
-      return 'https://smartpark-api.onrender.com';
+      return 'https://smartpark-ai-zwux.onrender.com';
     }
 
     function getApiUrl(path) {
@@ -598,10 +598,10 @@
     }
 
     function configureApiUrl() {
-      const current = getApiBase() || 'https://smartpark-api.onrender.com';
-      const input = prompt('Enter Render Backend API Base URL:\n(e.g., https://smartpark-api.onrender.com)', current);
+      const current = getApiBase() || 'https://smartpark-ai-zwux.onrender.com';
+      const input = prompt('Enter Render Backend API Base URL:\n(e.g., https://smartpark-ai-zwux.onrender.com)', current);
       if (input !== null) {
-        if (input.trim() === '' || input.trim() === 'https://smartpark-api.onrender.com') {
+        if (input.trim() === '' || input.trim() === 'https://smartpark-ai-zwux.onrender.com') {
           localStorage.removeItem('SMARTPARK_API_BASE');
         } else {
           localStorage.setItem('SMARTPARK_API_BASE', input.trim());
@@ -609,6 +609,7 @@
         checkBackendHealth();
       }
     }
+
 
     // Run backend check on page load
     checkBackendHealth();
