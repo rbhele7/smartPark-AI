@@ -90,10 +90,20 @@ class ModelManager:
 
         start_t = time.perf_counter()
         raw_preds = self.model.predict(batch_tensor, verbose=0)
+        
+        # Test-Time Augmentation (TTA): average original + horizontal flip predictions to boost deployment accuracy
+        try:
+            flipped_tensor = np.flip(batch_tensor, axis=2)
+            flipped_preds = self.model.predict(flipped_tensor, verbose=0)
+            raw_preds = 0.6 * raw_preds + 0.4 * flipped_preds
+        except Exception as e:
+            pass
+
         elapsed_ms = (time.perf_counter() - start_t) * 1000
 
         self.total_inferences += len(batch_tensor)
         self.total_inference_time_ms += elapsed_ms
+
 
         results = []
         for raw_val in raw_preds:

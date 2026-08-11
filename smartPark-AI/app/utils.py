@@ -2,7 +2,7 @@ import io
 import base64
 from typing import Tuple, List, Optional
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 from fastapi import HTTPException, UploadFile, status
 from app.config import ALLOWED_EXTENSIONS, ALLOWED_MIMETYPES, IMG_SIZE
 
@@ -44,8 +44,9 @@ def validate_image_file(file: UploadFile, content: Optional[bytes] = None) -> by
 
 
 def preprocess_image_bytes(content: bytes, target_size: Tuple[int, int] = IMG_SIZE) -> np.ndarray:
-    """Read image bytes, convert to RGB, resize, and return numpy array shape (1, H, W, 3)."""
-    image = Image.open(io.BytesIO(content)).convert("RGB")
+    """Read image bytes, handle EXIF rotation, convert to RGB, resize, and return numpy array shape (1, H, W, 3)."""
+    raw_img = Image.open(io.BytesIO(content))
+    image = ImageOps.exif_transpose(raw_img).convert("RGB")
     image = image.resize(target_size, Image.Resampling.BILINEAR)
     img_array = np.array(image, dtype=np.float32)
     # Add batch dimension -> (1, 224, 224, 3)
@@ -53,14 +54,16 @@ def preprocess_image_bytes(content: bytes, target_size: Tuple[int, int] = IMG_SI
 
 
 def preprocess_batch_image_bytes(content_list: List[bytes], target_size: Tuple[int, int] = IMG_SIZE) -> np.ndarray:
-    """Convert list of image bytes into a single batch numpy array shape (N, H, W, 3)."""
+    """Convert list of image bytes into a single batch numpy array shape (N, H, W, 3) with EXIF transposition."""
     batch_list = []
     for content in content_list:
-        image = Image.open(io.BytesIO(content)).convert("RGB")
+        raw_img = Image.open(io.BytesIO(content))
+        image = ImageOps.exif_transpose(raw_img).convert("RGB")
         image = image.resize(target_size, Image.Resampling.BILINEAR)
         img_array = np.array(image, dtype=np.float32)
         batch_list.append(img_array)
     return np.array(batch_list, dtype=np.float32)
+
 
 
 def draw_parking_annotations(
