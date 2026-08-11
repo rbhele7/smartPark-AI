@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "name": "smartpark-ai",
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api/index.py"
+    }
+  ],
+  "env": {
+    "CONFIDENCE_THRESHOLD": "0.5"
+  }
+}

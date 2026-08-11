@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.responses import HTMLResponse, FileResponse, RedirectResponse
 
 from app.config import API_TITLE, API_VERSION, API_DESCRIPTION
 from app.model import model_manager
@@ -64,6 +64,12 @@ if os.path.exists(STATIC_DIR):
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
+@app.get("/", include_in_schema=False)
+async def root_redirect():
+    """Redirect root path to interactive web dashboard."""
+    return RedirectResponse(url="/dashboard")
+
+
 @app.get("/dashboard", response_class=HTMLResponse, tags=["Dashboard"])
 async def dashboard():
     """Serve real-time interactive AI parking dashboard."""
@@ -71,3 +77,4 @@ async def dashboard():
     if os.path.exists(index_file):
         return FileResponse(index_file)
     return HTMLResponse("<h1>SmartPark AI Dashboard coming soon!</h1>")
+
