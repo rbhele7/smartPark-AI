@@ -152,7 +152,7 @@ async def predict_parking_lot(
 
         crop = full_image.crop((x1, y1, x2, y2))
         buf = io.BytesIO()
-        crop.save(buf, format="JPEG")
+        crop.save(buf, format="PNG")
         cropped_bytes_list.append(buf.getvalue())
         spot_bboxes.append((spot.spot_id, [x1, y1, x2 - x1, y2 - y1]))
 
