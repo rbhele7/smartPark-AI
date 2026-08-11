@@ -1,19 +1,11 @@
 {
   "version": 2,
-  "name": "smartpark-ai",
-  "builds": [
+  "name": "smartpark-ai-frontend",
+  "cleanUrls": true,
+  "rewrites": [
     {
-      "src": "api/index.py",
-      "use": "@vercel/python"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "api/index.py"
-    }
-  ],
-  "env": {
-    "CONFIDENCE_THRESHOLD": "0.5"
-  }
+  ]
 }

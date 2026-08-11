@@ -2,43 +2,33 @@ services:
   - type: web
     name: smartpark-api
     runtime: python
-    rootDir: smartPark-AI
     buildCommand: pip install -r requirements.txt
     startCommand: python run.py
     healthCheckPath: /health
-
     envVars:
       - key: PYTHON_VERSION
-        value: 3.12.13
-
+        value: 3.12.8
       - key: CONFIDENCE_THRESHOLD
         value: "0.5"
-
       - key: KERAS_HOME
         value: /tmp/.keras
-
       - key: MPLCONFIGDIR
         value: /tmp/.matplotlib
 
   - type: web
     name: smartpark-dashboard
     runtime: python
-    rootDir: smartPark-AI
     buildCommand: pip install -r requirements.txt
     startCommand: streamlit run app/streamlit_app.py --server.port $PORT --server.address 0.0.0.0 --server.headless true
-
     envVars:
       - key: API_BASE
         fromService:
           type: web
           name: smartpark-api
-          envVarKey: RENDER_EXTERNAL_URL
-
+          property: url
       - key: PYTHON_VERSION
-        value: 3.12.13
-
+        value: 3.12.8
       - key: KERAS_HOME
         value: /tmp/.keras
-
       - key: MPLCONFIGDIR
         value: /tmp/.matplotlib
