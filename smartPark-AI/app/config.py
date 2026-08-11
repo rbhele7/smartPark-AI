@@ -1,5 +1,11 @@
 import os
+import tempfile
 from pathlib import Path
+
+# Ensure writable directories in containerized/serverless environments
+_tmp_dir = tempfile.gettempdir()
+os.environ.setdefault("KERAS_HOME", os.path.join(_tmp_dir, "keras_cache"))
+os.environ.setdefault("MPLCONFIGDIR", os.path.join(_tmp_dir, "mpl_cache"))
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 

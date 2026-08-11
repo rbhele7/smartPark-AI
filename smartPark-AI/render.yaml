@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: smartpark-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python run.py
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: CONFIDENCE_THRESHOLD
+        value: 0.5
+
+  - type: web
+    name: smartpark-dashboard
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run app/streamlit_app.py --server.port $PORT --server.address 0.0.0.0
+    envVars:
+      - key: API_BASE
+        fromService:
+          type: web
+          name: smartpark-api
+          property: url

@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import requests
 import io
@@ -13,7 +14,8 @@ st.set_page_config(
 st.title("🅿️ SmartPark AI - Parking Occupancy Detection")
 st.subheader("FastAPI Powered Real-Time CNN Occupancy Analytics")
 
-API_BASE = "http://127.0.0.1:8001"
+# Dynamically resolve FastAPI backend URL from environment variables
+API_BASE = os.getenv("API_BASE", os.getenv("BACKEND_URL", "http://127.0.0.1:8080")).rstrip("/")
 
 # Sidebar System Health
 st.sidebar.header("System Status")
@@ -26,7 +28,7 @@ try:
     else:
         st.sidebar.warning("Backend Offline")
 except Exception:
-    st.sidebar.error("Cannot connect to FastAPI backend at port 8001")
+    st.sidebar.error(f"Cannot connect to FastAPI backend at {API_BASE}")
 
 tab1, tab2, tab3 = st.tabs(["Single Spot Predictor", "Batch Analyzer", "Full Parking Lot ROI"])
 
